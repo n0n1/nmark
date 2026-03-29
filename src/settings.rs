@@ -49,6 +49,12 @@ pub enum SettingsError {
         path: PathBuf,
         source: TomlishError,
     },
+    InvalidConfigValue {
+        path: PathBuf,
+        key: &'static str,
+        value: String,
+        expected: &'static str,
+    },
     Input(InputError),
     MissingInput,
 }
@@ -148,9 +154,19 @@ fn load_file_config(path: &Path) -> SettingsResult<FileConfig> {
             .and_then(toml_string)
             .filter(|value| !value.is_empty())
             .map(ToOwned::to_owned),
-        request_timeout_sec: doc.get("http.request_timeout_sec").and_then(toml_u64),
-        connect_timeout_sec: doc.get("http.connect_timeout_sec").and_then(toml_u64),
-        max_redirects: doc.get("http.max_redirects").and_then(toml_usize),
+        request_timeout_sec: parse_nonzero_u64(
+            path,
+            &doc,
+            "http.request_timeout_sec",
+            "a positive integer number of seconds",
+        )?,
+        connect_timeout_sec: parse_nonzero_u64(
+            path,
+            &doc,
+            "http.connect_timeout_sec",
+            "a positive integer number of seconds",
+        )?,
+        max_redirects: parse_usize(path, &doc, "http.max_redirects", "a non-negative integer")?,
     };
 
     Ok(FileConfig {
@@ -206,19 +222,63 @@ fn toml_bool(value: &TomlValue) -> Option<bool> {
     }
 }
 
-fn toml_u64(value: &TomlValue) -> Option<u64> {
-    match value {
-        TomlValue::Integer(value) => (*value).try_into().ok(),
+fn parse_nonzero_u64(
+    path: &Path,
+    doc: &std::collections::HashMap<String, TomlValue>,
+    key: &'static str,
+    expected: &'static str,
+) -> SettingsResult<Option<u64>> {
+    let Some(value) = doc.get(key) else {
+        return Ok(None);
+    };
+
+    let parsed = match value {
+        TomlValue::Integer(value) => u64::try_from(*value).ok(),
         TomlValue::String(value) => value.parse().ok(),
         _ => None,
     }
+    .filter(|value| *value > 0);
+
+    parsed.ok_or_else(|| SettingsError::InvalidConfigValue {
+        path: path.to_path_buf(),
+        key,
+        value: config_value_repr(value),
+        expected,
+    })
+    .map(Some)
 }
 
-fn toml_usize(value: &TomlValue) -> Option<usize> {
-    match value {
-        TomlValue::Integer(value) => (*value).try_into().ok(),
+fn parse_usize(
+    path: &Path,
+    doc: &std::collections::HashMap<String, TomlValue>,
+    key: &'static str,
+    expected: &'static str,
+) -> SettingsResult<Option<usize>> {
+    let Some(value) = doc.get(key) else {
+        return Ok(None);
+    };
+
+    let parsed = match value {
+        TomlValue::Integer(value) => usize::try_from(*value).ok(),
         TomlValue::String(value) => value.parse().ok(),
         _ => None,
+    };
+
+    parsed.ok_or_else(|| SettingsError::InvalidConfigValue {
+        path: path.to_path_buf(),
+        key,
+        value: config_value_repr(value),
+        expected,
+    })
+    .map(Some)
+}
+
+fn config_value_repr(value: &TomlValue) -> String {
+    match value {
+        TomlValue::String(value) => format!("{value:?}"),
+        TomlValue::Bool(value) => value.to_string(),
+        TomlValue::Integer(value) => value.to_string(),
+        TomlValue::StringArray(values) => format!("{values:?}"),
     }
 }
 
@@ -286,6 +346,16 @@ impl fmt::Display for SettingsError {
             SettingsError::ConfigParse { path, source } => {
                 write!(f, "failed to parse config `{}`: {source}", path.display())
             }
+            SettingsError::InvalidConfigValue {
+                path,
+                key,
+                value,
+                expected,
+            } => write!(
+                f,
+                "invalid value for `{key}` in config `{}`: {value}; expected {expected}",
+                path.display()
+            ),
             SettingsError::Input(source) => write!(f, "{source}"),
             SettingsError::MissingInput => f.write_str(
                 "no input source provided; pass a URL, use --input, or create `download.toml` in the current directory",
@@ -300,6 +370,7 @@ impl Error for SettingsError {
             SettingsError::CurrentDir(source) => Some(source),
             SettingsError::ConfigRead { source, .. } => Some(source),
             SettingsError::ConfigParse { source, .. } => Some(source),
+            SettingsError::InvalidConfigValue { .. } => None,
             SettingsError::Input(source) => Some(source),
             SettingsError::MissingInput => None,
         }
@@ -450,7 +521,41 @@ mod tests {
         assert_eq!(resolved.http.max_redirects, 2);
         assert_eq!(resolved.http.accept_language, "ru,en;q=0.8");
 
-        let _ = fs::remove_dir_all(resolved.output_dir);
+        let _ = fs::remove_dir_all(cwd);
+    }
+
+    #[test]
+    fn rejects_invalid_http_timeout_config() {
+        let cwd = temp_dir("invalid-http-config");
+        fs::create_dir_all(&cwd).unwrap();
+        fs::write(
+            cwd.join("config.toml"),
+            "[http]\nrequest_timeout_sec = \"fast\"\n",
+        )
+        .unwrap();
+        fs::write(cwd.join("download.toml"), "urls = [\"https://a\"]\n").unwrap();
+
+        let error = resolve_config_from(
+            RunOptions {
+                source: None,
+                output_dir: None,
+                write_to_stdout: None,
+                include_frontmatter: None,
+            },
+            cwd.clone(),
+            None,
+        )
+        .unwrap_err();
+
+        assert!(matches!(
+            error,
+            super::SettingsError::InvalidConfigValue {
+                key: "http.request_timeout_sec",
+                ..
+            }
+        ));
+
+        let _ = fs::remove_dir_all(cwd);
     }
 
     fn temp_dir(name: &str) -> PathBuf {

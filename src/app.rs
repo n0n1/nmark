@@ -21,6 +21,10 @@ impl App {
 
     pub async fn run(&self, config: ResolvedConfig) -> AppResult<()> {
         let total = config.urls.len();
+        if total == 1 {
+            return self.process_url(&config, 0, &config.urls[0]).await;
+        }
+
         let mut failed = 0usize;
 
         for (index, url) in config.urls.iter().enumerate() {

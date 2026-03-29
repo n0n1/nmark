@@ -2,6 +2,13 @@
 name = "nmark"
 version = "0.1.0"
 edition = "2024"
+description = "CLI tool for downloading article pages and converting readable content to Markdown"
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/n0n1/nmark"
+homepage = "https://github.com/n0n1/nmark"
+keywords = ["markdown", "cli", "scraping", "article", "readability"]
+categories = ["command-line-utilities", "text-processing"]
 
 [dependencies]
 html2md = "0.2.15"

@@ -85,4 +85,4 @@ cargo clippy --all-targets --all-features -- -D warnings
 
 Core code lives in `src/`, with modules for CLI parsing, settings resolution, input loading, HTTP, extraction, metadata parsing, frontmatter generation, and document writing.
 
-See [config.md](/Users/itelenk0v/org/projects/rmark/nmark/config.md) for the full configuration reference.
+See [config.md](config.md) for the full configuration reference.
