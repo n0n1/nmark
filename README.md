@@ -57,6 +57,7 @@ include_frontmatter = true
 request_timeout_sec = 20
 connect_timeout_sec = 10
 max_redirects = 10
+upgrade_insecure_requests = true
 ```
 
 Example `download.toml`:

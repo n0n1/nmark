@@ -33,9 +33,10 @@ include_frontmatter = true
 connect_timeout_sec = 10
 request_timeout_sec = 20
 max_redirects = 10
-user_agent = "nmark/0.1.0"
+user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
 accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
 accept_language = "en-US,en;q=0.9,ru;q=0.8"
+upgrade_insecure_requests = true
 ```
 
 Supported keys:
@@ -65,9 +66,10 @@ HTTP client settings live under `[http]` in `config.toml`.
 connect_timeout_sec = 10
 request_timeout_sec = 20
 max_redirects = 10
-user_agent = "nmark/0.1.0"
+user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
 accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
 accept_language = "en-US,en;q=0.9,ru;q=0.8"
+upgrade_insecure_requests = true
 ```
 
 Supported keys:
@@ -90,14 +92,23 @@ Supported keys:
 - `accept_language = "..."`
   Value used for the `Accept-Language` header.
 
+- `referer = "..."`
+  Optional explicit `Referer` header. If omitted, `nmark` derives a same-origin referer like `https://example.com/`.
+
+- `upgrade_insecure_requests = true|false`
+  Controls whether `Upgrade-Insecure-Requests: 1` is sent.
+
 Built-in defaults:
 
 - `connect_timeout_sec = 10`
 - `request_timeout_sec = 20`
 - `max_redirects = 10`
 - `user_agent = "nmark/<version>"`
+- `user_agent = "Mozilla/5.0 ... Chrome/136.0.0.0 Safari/537.36"`
 - `accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"`
 - `accept_language = "en-US,en;q=0.9,ru;q=0.8"`
+- `referer = derived from request URL origin`
+- `upgrade_insecure_requests = true`
 
 ## Recommended Profiles
 

@@ -31,6 +31,8 @@ struct HttpConfigOverrides {
     user_agent: Option<String>,
     accept: Option<String>,
     accept_language: Option<String>,
+    referer: Option<String>,
+    upgrade_insecure_requests: Option<bool>,
     request_timeout_sec: Option<u64>,
     connect_timeout_sec: Option<u64>,
     max_redirects: Option<usize>,
@@ -154,6 +156,14 @@ fn load_file_config(path: &Path) -> SettingsResult<FileConfig> {
             .and_then(toml_string)
             .filter(|value| !value.is_empty())
             .map(ToOwned::to_owned),
+        referer: doc
+            .get("http.referer")
+            .and_then(toml_string)
+            .filter(|value| !value.is_empty())
+            .map(ToOwned::to_owned),
+        upgrade_insecure_requests: doc
+            .get("http.upgrade_insecure_requests")
+            .and_then(toml_bool),
         request_timeout_sec: parse_nonzero_u64(
             path,
             &doc,
@@ -308,6 +318,12 @@ impl HttpConfigOverrides {
         if other.accept_language.is_some() {
             self.accept_language = other.accept_language;
         }
+        if other.referer.is_some() {
+            self.referer = other.referer;
+        }
+        if other.upgrade_insecure_requests.is_some() {
+            self.upgrade_insecure_requests = other.upgrade_insecure_requests;
+        }
         if other.request_timeout_sec.is_some() {
             self.request_timeout_sec = other.request_timeout_sec;
         }
@@ -325,6 +341,10 @@ impl HttpConfigOverrides {
             user_agent: self.user_agent.unwrap_or(defaults.user_agent),
             accept: self.accept.unwrap_or(defaults.accept),
             accept_language: self.accept_language.unwrap_or(defaults.accept_language),
+            referer: self.referer.or(defaults.referer),
+            upgrade_insecure_requests: self
+                .upgrade_insecure_requests
+                .unwrap_or(defaults.upgrade_insecure_requests),
             request_timeout_sec: self
                 .request_timeout_sec
                 .unwrap_or(defaults.request_timeout_sec),
@@ -520,6 +540,8 @@ mod tests {
         assert_eq!(resolved.http.request_timeout_sec, 7);
         assert_eq!(resolved.http.max_redirects, 2);
         assert_eq!(resolved.http.accept_language, "ru,en;q=0.8");
+        assert_eq!(resolved.http.referer, None);
+        assert!(resolved.http.upgrade_insecure_requests);
 
         let _ = fs::remove_dir_all(cwd);
     }

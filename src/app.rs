@@ -10,12 +10,14 @@ use crate::settings::ResolvedConfig;
 
 pub struct App {
     client: reqwest::Client,
+    http: http_client::HttpConfig,
 }
 
 impl App {
     pub fn new(http: &http_client::HttpConfig) -> AppResult<Self> {
         Ok(Self {
             client: http_client::build_client(http)?,
+            http: http.clone(),
         })
     }
 
@@ -54,7 +56,7 @@ impl App {
     }
 
     async fn process_url(&self, config: &ResolvedConfig, index: usize, url: &str) -> AppResult<()> {
-        let html = http_client::fetch_html(&self.client, url).await?;
+        let html = http_client::fetch_html(&self.client, &self.http, url).await?;
         let metadata = metadata::extract_metadata(&html);
         let article = extractor::extract_article(&html, url)?;
         let title = article.title.as_deref().unwrap_or("article");
