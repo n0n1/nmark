@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "nmark": {
+      "command": "cargo",
+      "args": ["run", "--quiet", "--bin", "nmark-mcp"],
+      "cwd": "../.."
+    }
+  }
+}

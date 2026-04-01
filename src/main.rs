@@ -1,21 +1,8 @@
-mod app;
-mod cli;
-mod document;
-mod error;
-mod extractor;
-mod frontmatter;
-mod http_client;
-mod inputs;
-mod metadata;
-mod settings;
-mod tomlish;
-
-use app::App;
-use cli::{Command, RunOptions};
-use error::{AppError, AppResult};
-use inputs::InputError;
-use settings::SettingsError;
-use settings::resolve_config;
+use nmark::app::App;
+use nmark::cli::{Command, RunOptions};
+use nmark::error::{AppError, AppResult};
+use nmark::inputs::InputError;
+use nmark::settings::{resolve_config, SettingsError};
 
 #[tokio::main]
 async fn main() {

@@ -1,0 +1,36 @@
+{
+  "name": "nmark",
+  "version": "0.1.0",
+  "description": "Convert article URLs to readable Markdown through a local MCP wrapper.",
+  "author": {
+    "name": "n0n1",
+    "url": "https://github.com/n0n1"
+  },
+  "homepage": "https://github.com/n0n1/nmark",
+  "repository": "https://github.com/n0n1/nmark",
+  "license": "Apache-2.0",
+  "keywords": [
+    "markdown",
+    "article",
+    "scraping",
+    "mcp",
+    "codex"
+  ],
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "nmark",
+    "shortDescription": "Turn article URLs into Markdown",
+    "longDescription": "Repo-local Codex plugin that exposes the nmark article-to-Markdown pipeline through a local stdio MCP server.",
+    "developerName": "n0n1",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Write"],
+    "websiteURL": "https://github.com/n0n1/nmark",
+    "privacyPolicyURL": "https://github.com/n0n1/nmark",
+    "termsOfServiceURL": "https://github.com/n0n1/nmark",
+    "defaultPrompt": [
+      "Convert this article URL with nmark",
+      "Save this article as Markdown using nmark",
+      "Fetch this page and return readable Markdown"
+    ]
+  }
+}

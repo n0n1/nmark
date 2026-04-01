@@ -27,6 +27,19 @@ cargo run -- urls.txt --output-dir content
 cargo run -- --help
 ```
 
+## Codex Plugin
+
+This repository now includes a repo-local Codex plugin at `plugins/nmark/`.
+
+- MCP server binary: `cargo run --quiet --bin nmark-mcp`
+- Plugin manifest: `plugins/nmark/.codex-plugin/plugin.json`
+- MCP server config: `plugins/nmark/.mcp.json`
+- Marketplace entry: `.agents/plugins/marketplace.json`
+
+The plugin exposes one MCP tool:
+
+- `nmark_convert`: fetch an article URL and return readable Markdown, optionally saving it to a file
+
 CLI summary:
 
 ```text
