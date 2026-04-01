@@ -16,7 +16,7 @@ cargo --version
 From the repository root:
 
 ```bash
-cd /Users/itelenk0v/org/projects/rmark/nmark
+cd "$HOME/org/projects/rmark/nmark"
 cargo install --path .
 ```
 
@@ -28,12 +28,51 @@ Verify:
 nmark --help
 ```
 
+## Install MCP Binary For Codex
+
+If you want to use `nmark` as a global MCP tool in Codex, install the `nmark-mcp` binary:
+
+```bash
+cd "$HOME/org/projects/rmark/nmark"
+cargo install --path . --bin nmark-mcp
+```
+
+You can also install both binaries at once:
+
+```bash
+cd "$HOME/org/projects/rmark/nmark"
+cargo install --path . --bins
+```
+
+Verify:
+
+```bash
+"$HOME/.cargo/bin/nmark-mcp"
+```
+
+It should start and wait for JSON-RPC input on stdin.
+
+Add this to `$HOME/.codex/config.toml`.
+Use absolute paths here. Do not rely on `$HOME` expansion inside MCP config values.
+
+```toml
+[mcp_servers.nmark]
+command = "/Users/your-username/.cargo/bin/nmark-mcp"
+args = []
+cwd = "/Users/your-username/path_to_nmark"
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+required = false
+```
+
+Restart Codex after editing the config.
+
 ## Build a Release Binary
 
 If you only want the compiled executable:
 
 ```bash
-cd /Users/itelenk0v/org/projects/rmark/nmark
+cd "$HOME/org/projects/rmark/nmark"
 cargo build --release
 ```
 

@@ -40,6 +40,46 @@ The plugin exposes one MCP tool:
 
 - `nmark_convert`: fetch an article URL and return readable Markdown, optionally saving it to a file
 
+### MCP Setup In Codex
+
+`nmark` is configured as a repo-local Codex plugin. No global `$HOME/.codex/config.toml` entry is required for this repository.
+
+1. Open this repository in Codex.
+2. Make sure Rust dependencies are available and the project builds.
+3. Reload or restart Codex so it re-reads `.agents/plugins/marketplace.json`.
+4. Codex will start the MCP server using `plugins/nmark/.mcp.json`, which runs:
+
+```bash
+cargo run --quiet --bin nmark-mcp
+```
+
+If the tool does not appear, verify that `cargo run --quiet --bin nmark-mcp` starts successfully in the repository root.
+
+### Global MCP Setup
+
+If you want `nmark` to be available in every Codex session, install the MCP binary and register it in `$HOME/.codex/config.toml`.
+
+Install the binary:
+
+```bash
+cargo install --path . --bin nmark-mcp
+```
+
+Add this entry to `$HOME/.codex/config.toml`.
+Use absolute paths here. Do not rely on `$HOME` expansion inside MCP config values.
+
+```toml
+[mcp_servers.nmark]
+command = "/Users/your-username/.cargo/bin/nmark-mcp"
+args = []
+cwd = "/Users/your-username/path_to_nmark"
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+required = false
+```
+
+Restart Codex after updating the config.
+
 CLI summary:
 
 ```text
